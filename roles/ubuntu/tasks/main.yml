@@ -1,0 +1,36 @@
+- name: Create directory
+  tags: dir
+  file:
+    path: ~/prometheus
+    state: directory
+
+- name: Download Prometheus
+  unarchive:
+    src: https://github.com/prometheus/prometheus/releases/download/v2.39.1/prometheus-2.39.1.linux-amd64.tar.gz
+    dest: ~/prometheus
+    remote_src: yes
+    mode: 0777
+    owner: root
+    group: root
+
+- name: Add executables of Prometheus in a path
+  tags: exe
+  shell: |
+    cd ~/prometheus/prometheus*
+    sudo rsync -av . /usr/local/bin/prometheus/
+
+- name: Copy Prometheus file
+  tags: file
+  copy:
+    src: prometheus.service
+    dest: /etc/systemd/system/
+    owner: root
+    group: root
+    mode: 777
+
+- name: Start HTTPD
+  tags: httpd
+  service:
+    name: prometheus
+    state: restarted
+    enabled: true
